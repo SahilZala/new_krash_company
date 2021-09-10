@@ -1,39 +1,36 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:krash_company/DatabaseConnection/create_client_data.dart';
 import 'package:krash_company/home/address_picker.dart';
 import 'package:krash_company/home/home_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:uuid/uuid.dart';
 
 import 'home/new_address_picker.dart';
 
 class OTPVerification extends StatefulWidget{
   String _country_code="+91";
   String _mobile_no = "";
-  _OTPVerification createState() => _OTPVerification(_country_code,_mobile_no);
-  OTPVerification(_country_code,_mobile_no)
-  {
-    this._country_code = _country_code;
-    this._mobile_no = _mobile_no;
-  }
+  String verificationId = "";
+  _OTPVerification createState() => _OTPVerification(_country_code,_mobile_no,verificationId);
+
+  OTPVerification(this._country_code, this._mobile_no, this.verificationId);
 }
 
 class _OTPVerification extends State<OTPVerification>
 {
   String _coutry_code,_mobile_no;
+  String verficationId;
 
-
-  _OTPVerification(this._coutry_code, this._mobile_no);
-
-  String otp="1234";
+  _OTPVerification(this._coutry_code, this._mobile_no, this.verficationId);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    print(_coutry_code+""+_mobile_no);
   }
 
 
@@ -41,10 +38,6 @@ class _OTPVerification extends State<OTPVerification>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // iconTheme: IconThemeData(
-        //   color: Color.fromRGBO(0,0,102,1),
-        //
-        // ),
         elevation: 0.0,
         backgroundColor: Color.fromRGBO(0,0,102, 1),
         title: Text("Login/Signup", style: TextStyle(fontFamily: 'RobotoSlab', letterSpacing: 0.6),),
@@ -88,11 +81,11 @@ class _OTPVerification extends State<OTPVerification>
             Container(
               padding: EdgeInsets.all(10),
               width: MediaQuery.of(context).size.width,
-              child: Form(
+              child: _pointer == 0 ? Form(
                 child: PinCodeTextField(
                   keyboardType: TextInputType.number,
                   backgroundColor: Colors.transparent,
-                  appContext: context, length: 4,
+                  appContext: context, length: 6,
                   pinTheme: PinTheme(
                     shape: PinCodeFieldShape.box,
                     borderWidth: 2,
@@ -105,11 +98,15 @@ class _OTPVerification extends State<OTPVerification>
                   ),mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
                   onCompleted: (value)
-                  {
-                    if(otp == value)
-                    {
+                  async {
+                    setState(() {
+                      _pointer = 1;
+                    });
+                    await FirebaseAuth.instance
+                        .signInWithCredential(PhoneAuthProvider.credential(verificationId: verficationId, smsCode: value))
+                        .then((value) async {
                       Fluttertoast.showToast(
-                        msg: "OTP Verified",
+                        msg: "Verified",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -118,64 +115,81 @@ class _OTPVerification extends State<OTPVerification>
                         fontSize: 16.0,
                       );
 
-                      Timer(Duration(seconds: 2), () =>
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => AddressPicker(_coutry_code,_mobile_no)),
-                          )
-                      );
+                      String userid = Uuid().v1().toString();
 
-                    }
-                    else {
-                      Fluttertoast.showToast(
-                        msg: "Wrong OTP",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                    }
+                      CreateClientData ccd = new CreateClientData();
+
+                      ccd.check(_coutry_code+" "+_mobile_no).then((value){
+                        if(value.exists)
+                        {
+                          setState(() {
+                            _pointer = 0;
+                          });
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen(value.data())));
+                        }
+                        else{
+
+                          setState(() {
+                            _pointer = 0;
+                          });
+
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddressPicker(_coutry_code, _mobile_no)));
+                        }
+                      });
+
+                      // createNewUser.checkMobile(_coutry_code+" "+_mobile_no).then((value) {
+                      //   setState(() {
+                      //     _pointer = 0;
+                      //   });
+                      //
+                      //   if(value.data() == null)
+                      //   {
+                      //     print(value.data());
+                      //     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Profession("${_coutry_code} ${_mobile_no}")));
+                      //   }
+                      //   else{
+                      //     setState(() {
+                      //       _pointer = 0;
+                      //     });
+                      //
+                      //     Fluttertoast.showToast(
+                      //       msg: "done",
+                      //       toastLength: Toast.LENGTH_SHORT,
+                      //       gravity: ToastGravity.BOTTOM,
+                      //       timeInSecForIosWeb: 1,
+                      //       backgroundColor: Color.fromRGBO(0, 0, 102, 1),
+                      //       textColor: Colors.white,
+                      //       fontSize: 16.0,
+                      //     );
+                      //   }
+
+                        // FetchUserData fud = new FetchUserData();
+                        // fud.fetchData(_coutry_code+" "+_mobile_no).then((value) {
+                        //   if(value.data() != null)
+                        //   {
+                        //
+                        //     Navigator.pushReplacement(
+                        //       context,
+                        //       MaterialPageRoute(builder: (context) => HomeDashbord(value.data())),
+                        //     );
+                        //   }
+                        //});
+                 //     });
+                    });
                   },
                 ),
+              ) : Column(
+                children: [
+                  CircularProgressIndicator(),
+                ],
               ),
             )
 
           ],
         ),
-
-
-
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: (){
-      //
-      //
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => CreateProfile()),
-      //     );
-      //   },
-      // ),
-
-      // bottomNavigationBar: Padding(
-      //   padding: EdgeInsets.all(18.0),
-      //   child: SizedBox(
-      //     height: 60,
-      //     child: RaisedButton(
-      //       onPressed: (){
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(builder: (context) =>Profession()),
-      //         );
-      //       },
-      //       color: Color.fromRGBO(0,0,102, 1),
-      //       textColor: Colors.white,
-      //       child: Text('Next',  style: TextStyle(fontFamily: 'RobotoSlab', letterSpacing: 0.6),),
-      //     ),
-      //   ),
-      // ),
     );
   }
+
+  int _pointer = 0;
 }

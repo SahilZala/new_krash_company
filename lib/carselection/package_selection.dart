@@ -29,12 +29,9 @@ class _PackageSelection extends State<PackageSelection>
           return <Widget>[
           SliverAppBar(
               backgroundColor: Color.fromRGBO(0,0,102,1),
-              // Allows the user to reveal the app bar if they begin scrolling back
-              // up the list of items.
               floating: true,
               pinned: true,
 
-              // Display a placeholder widget to visualize the shrinking size.
               flexibleSpace: FlexibleSpaceBar(
                 title:Text(
                   "CAR WASHING SERVICE",

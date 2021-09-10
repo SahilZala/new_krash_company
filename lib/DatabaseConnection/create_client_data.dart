@@ -1,26 +1,32 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class CreateClientData
 {
-  String userid,name,mail,address,lat,log,mobileno,time,date,profile,activation;
 
-  CreateClientData(
-      this.userid,
-      this.name,
-      this.mail,
-      this.address,
-      this.lat,
-      this.log,
-      this.mobileno,
-      this.time,
-      this.date,
-      this.profile,
-      this.activation);
-
-  Future<Map> create()
+  Future<void> create(userid,name,mail,address,lat,log,mobileno,time,date,profile)
   async {
+    return FirebaseFirestore.instance.collection("users").doc(mobileno).set({
+      'userid': userid,
+      'name': name,
+      'mail': mail,
+      'address': address,
+      'lat': lat,
+      'log': log,
+      'mobileno': mobileno,
+      'time': time,
+      'date': date,
+      'profile': profile,
+      'activation': 'true'
+    });
   }
+
+  Future<DocumentSnapshot> check(mobileno)
+  async => await FirebaseFirestore.instance.collection("users").doc(mobileno).get();
+
+
 
 }
 

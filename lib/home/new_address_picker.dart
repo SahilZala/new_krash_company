@@ -78,6 +78,7 @@ class _NewAddressPicker extends State<NewAddressPicker>
         child: Stack(
           children: [
             GoogleMap(
+
               onTap: (ll){
                 setState(() {
 
@@ -244,13 +245,23 @@ class _NewAddressPicker extends State<NewAddressPicker>
                    UpdateClientData ucd = UpdateClientData(data["mobileno"],data["userid"],location,ll.latitude.toString(),ll.longitude.toString(),"date","time",data["id"]);
 
                    ucd.updateData().then((value){
-                     if(value != null)
-                     {
-                       Navigator.pushReplacement(
-                         context,
-                         MaterialPageRoute(builder: (context) => HomeScreen(value)),
-                       );
-                     }
+
+                     setState(() {
+                       data['address'] = location;
+                       data['lat'] = ll.latitude.toString();
+                       data['log'] = ll.longitude.toString();
+
+                     });
+
+                     print(data);
+
+                     Navigator.pushReplacement(
+                       context,
+                       MaterialPageRoute(builder: (context) => HomeScreen(data)),
+                     );
+
+                   }).catchError((onError){
+                     print(onError);
                    });
                   },
                     elevation: 5,

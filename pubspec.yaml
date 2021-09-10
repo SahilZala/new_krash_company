@@ -41,6 +41,12 @@ dependencies:
   fdottedline: ^1.0.1
   flutter_slidable: ^0.5.7
   flutter_rating_bar: ^4.0.0
+  firebase_core:
+  firebase_analytics:
+  firebase_auth:
+  cloud_firestore:
+  firebase_storage:
+
 
 
 

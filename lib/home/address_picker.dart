@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:krash_company/DatabaseConnection/create_client_data.dart';
+import 'package:uuid/uuid.dart';
 import 'home_screen.dart';
 
 class AddressPicker extends StatefulWidget{
@@ -271,9 +272,10 @@ class _AddressPicker extends State<AddressPicker>
        onPressed: (){
          setState(() {
 
-           _markers.clear();
-           _markers.add(Marker(markerId: MarkerId(ll.toString()),position: ll,infoWindow: InfoWindow(title: "sasa",snippet: "sasasa"),icon: BitmapDescriptor.defaultMarker));
-           _goToPosition(ll);
+           initState();
+           // _markers.clear();
+           // _markers.add(Marker(markerId: MarkerId(ll.toString()),position: ll,infoWindow: InfoWindow(title: "sasa",snippet: "sasasa"),icon: BitmapDescriptor.defaultMarker));
+           // _goToPosition(ll);
          });
        },
      ),
@@ -312,6 +314,9 @@ class _AddressPicker extends State<AddressPicker>
       var first = addresses.first;
       setState(() {
         location = "${first.featureName} : ${first.addressLine}";
+
+        ll = new LatLng(position.latitude, position.longitude);
+
         print(location);
       });
       return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
@@ -335,6 +340,7 @@ class _AddressPicker extends State<AddressPicker>
 
         location = "${value.first.featureName} : ${value.first.coordinates}";
 
+        ll = new LatLng(value.first.coordinates.latitude, value.first.coordinates.longitude);
         _markers.clear();
         _markers.add(Marker(markerId: MarkerId(newll.toString()),position: newll,infoWindow: InfoWindow(title: "here",snippet: "here"),icon: BitmapDescriptor.defaultMarker));
         _goToPosition(newll);
@@ -345,46 +351,55 @@ class _AddressPicker extends State<AddressPicker>
 
   void createUser()
   {
-    CreateClientData ccd = CreateClientData("id","name","mail",location,ll.latitude.toString(),ll.longitude.toString(),_country_code+_mobile_no,"time","date","profile","true");
-    ccd.create().then((value){
-      if(value != null)
-      {
-        Fluttertoast.showToast(
-          msg: "User created succesfully",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color.fromRGBO(0, 0, 102, 1),
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
 
-        Timer(Duration(
-          seconds: 1,),(){
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen(value)),
-          );
-        });
-      }
-      else{
-        Timer(Duration(
-          seconds: 1,),(){
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen(value)),
-          );
-        });
-        Fluttertoast.showToast(
-          msg: "!Something problem",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color.fromRGBO(0, 0, 102, 1),
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      }
+    CreateClientData ccd = new CreateClientData();
+
+    String userid = Uuid().v1().toString();
+    ccd.create(userid, "name", "mail", location, ll.latitude.toString(), ll.longitude.toString(), _country_code+" "+_mobile_no, "time", "date", "profile").then((value){
+      print("done");
+    }).catchError((onError){
+      print(onError);
     });
+    // CreateClientData ccd = CreateClientData("id","name","mail",location,ll.latitude.toString(),ll.longitude.toString(),_country_code+_mobile_no,"time","date","profile","true");
+    // ccd.create().then((value){
+    //   if(value != null)
+    //   {
+    //     Fluttertoast.showToast(
+    //       msg: "User created succesfully",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       backgroundColor: Color.fromRGBO(0, 0, 102, 1),
+    //       textColor: Colors.white,
+    //       fontSize: 16.0,
+    //     );
+    //
+    //     Timer(Duration(
+    //       seconds: 1,),(){
+    //       Navigator.pushReplacement(
+    //         context,
+    //         MaterialPageRoute(builder: (context) => HomeScreen(value)),
+    //       );
+    //     });
+    //   }
+    //   else{
+    //     Timer(Duration(
+    //       seconds: 1,),(){
+    //       Navigator.pushReplacement(
+    //         context,
+    //         MaterialPageRoute(builder: (context) => HomeScreen(value)),
+    //       );
+    //     });
+    //     Fluttertoast.showToast(
+    //       msg: "!Something problem",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       backgroundColor: Color.fromRGBO(0, 0, 102, 1),
+    //       textColor: Colors.white,
+    //       fontSize: 16.0,
+    //     );
+    //   }
+    // });
   }
 }

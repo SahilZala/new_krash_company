@@ -1,10 +1,13 @@
 
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:krash_company/checkout/new_check_out.dart';
 
 class ServiceSelection extends StatefulWidget
@@ -60,8 +63,9 @@ class _ServiceSelection extends State<ServiceSelection>
                      getBannerTitle(),
                      SizedBox(height: 20,width: 0,),
 
-                     getService(),
+                   //  getService(),
 
+                     getServiceList(service_name, car_type),
                      // _progress_indicator == 3 ?
                      //     Text("no data found") :
                      // _service_list_pointer == 1 ?
@@ -453,69 +457,69 @@ class _ServiceSelection extends State<ServiceSelection>
     });
   }
 
-  Widget getService()
-  {
-    return FutureBuilder(
-        builder: (ctx,snapshot){
-
-          if(snapshot.connectionState == ConnectionState.done)
-          {
-            if(snapshot.hasData)
-            {
-              return FutureBuilder(builder: (ctx,snapshot1){
-
-                if(snapshot1.connectionState == ConnectionState.done)
-                {
-                  if(snapshot1.hasData)
-                  {
-
-                      service_widget_list.clear();
-
-                      for (int i = 0; i < snapshot.data.length; i++) {
-                        for (int j = 0; j < snapshot1.data.length; j++) {
-                          if (snapshot.data[i]['id'] == snapshot1
-                              .data[j]['aid'] && snapshot1
-                              .data[j]['servicename'] == service_name &&
-                              snapshot1.data[j]['cartype'] == car_type) {
-                            service_widget_list.add(getListWidget(
-                                snapshot1.data[j], snapshot.data[i]));
-                          }
-                        }
-                      }
-                      return SingleChildScrollView(
-                          child: Column(children: service_widget_list));
-                  }
-                  else if(snapshot1.data == null)
-                  {
-                    return Text("no data");
-                  }
-                  else if(snapshot1.hasError)
-                  {
-                    return Text("no data");
-                  }
-                }
-
-
-                return CircularProgressIndicator();
-                },
-                future: getServiceList(service_name, car_type),
-              );
-            }
-            else if(snapshot.data == null)
-            {
-              return Text("no data");
-            }
-            else if(snapshot.hasError){
-             return Text("no data");
-            }
-          }
-
-          return CircularProgressIndicator();
-        },
-      future: fetch_vendor_data(),
-
-    );
-  }
+  // Widget getService()
+  // {
+  //   return FutureBuilder(
+  //       builder: (ctx,snapshot){
+  //
+  //         if(snapshot.connectionState == ConnectionState.done)
+  //         {
+  //           if(snapshot.hasData)
+  //           {
+  //             return FutureBuilder(builder: (ctx,snapshot1){
+  //
+  //               if(snapshot1.connectionState == ConnectionState.done)
+  //               {
+  //                 if(snapshot1.hasData)
+  //                 {
+  //
+  //                     service_widget_list.clear();
+  //
+  //                     for (int i = 0; i < snapshot.data.length; i++) {
+  //                       for (int j = 0; j < snapshot1.data.length; j++) {
+  //                         if (snapshot.data[i]['id'] == snapshot1
+  //                             .data[j]['aid'] && snapshot1
+  //                             .data[j]['servicename'] == service_name &&
+  //                             snapshot1.data[j]['cartype'] == car_type) {
+  //                           service_widget_list.add(getListWidget(
+  //                               snapshot1.data[j], snapshot.data[i]));
+  //                         }
+  //                       }
+  //                     }
+  //                     return SingleChildScrollView(
+  //                         child: Column(children: service_widget_list));
+  //                 }
+  //                 else if(snapshot1.data == null)
+  //                 {
+  //                   return Text("no data");
+  //                 }
+  //                 else if(snapshot1.hasError)
+  //                 {
+  //                   return Text("no data");
+  //                 }
+  //               }
+  //
+  //
+  //               return CircularProgressIndicator();
+  //               },
+  //               future: getServiceList(service_name, car_type),
+  //             );
+  //           }
+  //           else if(snapshot.data == null)
+  //           {
+  //             return Text("no data");
+  //           }
+  //           else if(snapshot.hasError){
+  //            return Text("no data");
+  //           }
+  //         }
+  //
+  //         return CircularProgressIndicator();
+  //       },
+  //     future: fetch_vendor_data(),
+  //
+  //   );
+  // }
 
 
   List<Widget> getList()
@@ -529,9 +533,64 @@ class _ServiceSelection extends State<ServiceSelection>
   }
 
 
-  Future<List> getServiceList(String servicename,String cartype)
-  async {
+  Widget getServiceList(String servicename,String cartype)
+  {
+    return new StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('vendor').snapshots(),
+        builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
 
+          if(snapshot.hasData) {
+            List shopdata = [];
+            int i = 0;
+
+
+              //
+              // print(snapshot.data.docs[i].data());
+
+
+             return Column(
+                children: snapshot.data.docs.map((e){
+                  double lat = double.parse(data['lat']);
+                  double log = double.parse(data['log']);
+
+                  double distance = Geolocator.distanceBetween(lat, log, double.parse(e.data()['lat']), double.parse(e.data()['log']));
+
+                  if(distance < 5000) {
+                    return StreamBuilder(
+                    stream: FirebaseFirestore.instance.collection('services').doc(e.data()['mobileno']).collection("service").snapshots(),
+                      builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.hasData) {
+                          return Column(
+                            children: snapshot.data.docs.map((ee) {
+                              if(ee.data()['cartype'] == cartype && ee.data()['servicename'] == servicename) {
+                                return getListWidget(ee.data(), e.data());
+                              }
+                              else{
+                                return Container();
+                              }
+                            }).toList(),
+                          );
+                        }
+                        else {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                      }
+                    );
+                    return Text(e.data()['name'],style: TextStyle(color: Colors.black,fontSize: 30),);
+                  }
+                  else
+                    {
+                      return Container();
+                    }
+                }).toList(),
+              );
+
+
+          }
+          else {
+            return Center(child: CircularProgressIndicator());
+          }
+    });
   }
 
 

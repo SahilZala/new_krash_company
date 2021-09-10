@@ -1,5 +1,6 @@
 
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -110,40 +111,48 @@ class _LoginSignup extends State<LoginSignup>
                          ],
                        ),
 
-                       MaterialButton(onPressed: (){
+                      _pointer == 0 ? MaterialButton(onPressed: (){
                          if(_formKey.currentState.validate())
                          {
 
-                           _mobile_no = _editingController.text;
-
-                           CheckMobileno cm = new CheckMobileno();
-                           cm.checkMobile(_country_code+_mobile_no).then((value){
-                             if(value == null)
-                             {
-                               Navigator.push(
-                                 context,
-                                 MaterialPageRoute(builder: (context) => OTPVerification(_country_code,_mobile_no)),
-                               );
-                             }
-                             else {
-                               Navigator.push(
-                                 context,
-                                 MaterialPageRoute(builder: (context) => HomeScreen(value)),
-                               );
-                               Fluttertoast.showToast(
-                                 msg: "welcome",
-                                 toastLength: Toast.LENGTH_SHORT,
-                                 gravity: ToastGravity.BOTTOM,
-                                 timeInSecForIosWeb: 1,
-                                 backgroundColor: Color.fromRGBO(0, 0, 102, 1),
-                                 textColor: Colors.white,
-                                 fontSize: 16.0,
-                               );
-                             }
-                           }).catchError((onError){
-                             print(onError);
+                           setState(() {
+                             _pointer = 1;
                            });
 
+                         mobileOtpVerification(_editingController.text.toString(), _country_code).then((value){
+                           print(value);
+                         });
+
+                           // _mobile_no = _editingController.text;
+                           //
+                           // CheckMobileno cm = new CheckMobileno();
+                           // cm.checkMobile(_country_code+_mobile_no).then((value){
+                           //   if(value == null)
+                           //   {
+                           //     Navigator.push(
+                           //       context,
+                           //       MaterialPageRoute(builder: (context) => OTPVerification(_country_code,_mobile_no)),
+                           //     );
+                           //   }
+                           //   else {
+                           //     Navigator.push(
+                           //       context,
+                           //       MaterialPageRoute(builder: (context) => HomeScreen(value)),
+                           //     );
+                           //     Fluttertoast.showToast(
+                           //       msg: "welcome",
+                           //       toastLength: Toast.LENGTH_SHORT,
+                           //       gravity: ToastGravity.BOTTOM,
+                           //       timeInSecForIosWeb: 1,
+                           //       backgroundColor: Color.fromRGBO(0, 0, 102, 1),
+                           //       textColor: Colors.white,
+                           //       fontSize: 16.0,
+                           //     );
+                           //   }
+                           // }).catchError((onError){
+                           //   print(onError);
+                           // });
+                           //
 
 
 
@@ -163,12 +172,13 @@ class _LoginSignup extends State<LoginSignup>
                              borderRadius: BorderRadius.circular(5)
                            ),
                          )
-                       )
+                       ) : CircularProgressIndicator(),
                      ],
                    ),
                  ),
                ),
              ),
+
            ],
           ),
       )
@@ -206,6 +216,62 @@ class _LoginSignup extends State<LoginSignup>
       ],
     );
   }
+
+
+  Future<String> mobileOtpVerification(String mobileno,String countryCode)
+  async {
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: '$countryCode $mobileno',
+          verificationCompleted: (PhoneAuthCredential credential) {
+
+            setState(() {
+              _pointer = 0;
+            });
+          },
+          verificationFailed: (FirebaseAuthException e) {
+
+            setState(() {
+              _pointer = 0;
+            });
+          },
+          codeSent: (String verificationId, int resendToken) async {
+            print(verificationId);
+            setState(() {
+              _pointer = 0;
+              Navigator.push(context,
+                  MaterialPageRoute(builder:
+                      (context) =>
+                      OTPVerification(countryCode,mobileno,verificationId)
+                  )
+              );
+            });
+          },
+          codeAutoRetrievalTimeout: (String verificationId) async {
+
+            setState(() {
+              _pointer = 0;
+            });
+          },
+          timeout: Duration(
+              minutes: 2
+          )
+      );
+
+      return vid;
+
+    }
+    on FirebaseAuthException catch(ex){
+      return ex.message.toString();
+
+      setState(() {
+        _pointer = 0;
+      });
+    }
+  }
+
+  int _pointer = 0;
+  String vid = "none";
 
 
 }

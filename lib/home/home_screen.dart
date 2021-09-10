@@ -291,13 +291,20 @@ class _HomeScreen extends State<StatefulWidget>
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    Text(
-                      "address",
-                  //      data["address"],
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        )
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => NewAddressPicker(data)),
+                        );
+                      },
+                      child: Text(
+                        ""+data["address"],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          )
+                      ),
                     ),
                   ],
                 ),
@@ -325,10 +332,10 @@ class _HomeScreen extends State<StatefulWidget>
             margin: EdgeInsets.all(2),
             child: GestureDetector(
               onTap: (){
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Washing")),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Washing")),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -363,10 +370,10 @@ class _HomeScreen extends State<StatefulWidget>
 
             child: GestureDetector(
               onTap: (){
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Repairing")),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Repairing")),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -401,10 +408,10 @@ class _HomeScreen extends State<StatefulWidget>
 
             child: GestureDetector(
               onTap: (){
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => PackageSelection(data,"Equipment Installing")),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PackageSelection(data,"Equipment Installing")),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -439,10 +446,10 @@ class _HomeScreen extends State<StatefulWidget>
 
             child: GestureDetector(
               onTap: (){
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => PackageSelection(data,"Tyres and Wheel Care")),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PackageSelection(data,"Tyres and Wheel Care")),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -536,15 +543,23 @@ class _HomeScreen extends State<StatefulWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        height: 70,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage(
-                                    "images/car-transport.png"
-                                )
-                            )
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Services")),
+                          );
+                        },
+                        child: Container(
+                          height: 70,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: AssetImage(
+                                      "images/car-transport.png"
+                                  )
+                              )
+                          ),
                         ),
                       ),
 
@@ -571,15 +586,23 @@ class _HomeScreen extends State<StatefulWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        height: 70,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage(
-                                    "images/tyre_repairing.png"
-                                )
-                            )
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PackageSelection(data,"Car Repairing")),
+                          );
+                        },
+                        child: Container(
+                          height: 70,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: AssetImage(
+                                      "images/tyre_repairing.png"
+                                  )
+                              )
+                          ),
                         ),
                       ),
 
@@ -611,15 +634,23 @@ class _HomeScreen extends State<StatefulWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        height: 70,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage(
-                                    "images/parts_installing.png"
-                                )
-                            )
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PackageSelection(data,"Parts Installing")),
+                          );
+                        },
+                        child: Container(
+                          height: 70,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: AssetImage(
+                                      "images/parts_installing.png"
+                                  )
+                              )
+                          ),
                         ),
                       ),
 
@@ -1073,14 +1104,14 @@ class _HomeScreen extends State<StatefulWidget>
   void showBookedProductBottomSheet(orderdata)
   {
 
-    fetch_vendor_data(orderdata['takenbyid']).then((value){
-      if(value != null)
-      {
-        _scaffoldKey.currentState.showBottomSheet((context){
-          return getProductBottomSheetItem(orderdata,value);
-        });
-      }
-    });
+    // fetch_vendor_data(orderdata['takenbyid']).then((value){
+    //   if(value != null)
+    //   {
+    //     _scaffoldKey.currentState.showBottomSheet((context){
+    //       return getProductBottomSheetItem(orderdata,value);
+    //     });
+    //   }
+    // });
   }
 
   Widget getProductBottomSheetItem(odata,vdata)
@@ -1211,8 +1242,5 @@ class _HomeScreen extends State<StatefulWidget>
     );
   }
 
-  Future<Map> fetch_vendor_data(String userid)
-  async {
-  }
 
 }
